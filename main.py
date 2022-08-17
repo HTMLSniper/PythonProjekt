@@ -67,6 +67,7 @@ class UpgradeButton():
             updateButton()
     
     def upgradeIndex(self):
+        pass
     
     def pressed(self):
         self.root.upgradeBought(self.cost)
