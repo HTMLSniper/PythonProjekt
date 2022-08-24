@@ -1,1 +1,11 @@
-
+Doppelhand;100;10;Hand
+Fusshand;500;25;Hand
+Kaese;1000;10;Mechaniker
+Handschuhe;5000;25;Mechaniker
+Lupe;5000;25,1;Mechaniker,Zelt
+Mikroskop;5000;10;Zelt
+Magnet;10000;10;Haus
+Atomkraft;50000;10,1;Fabrik, Stadion
+Polizei;100000;10,1;Stadt,Insel
+Auto;500000;10,1;Insel,Gebirge
+Flugzeug;2000000;10;Planet
