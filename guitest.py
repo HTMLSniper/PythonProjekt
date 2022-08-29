@@ -130,6 +130,13 @@ class Building:
         self.state = "normal"
         self.image_button.config(state=self.state)
     
+    def upgrade_building(self):
+        """_summary_
+        """
+        global full_cps
+        full_cps += int(self.cps)*int(self.count)
+        self.cps *= 2
+        self.cps_lb.config(text=str(self.cps)+" Chips/s")
 
 
 class Upgrade:
@@ -142,6 +149,7 @@ class Upgrade:
         self.condition = condition
         self.upgrade = upgrade
         self.state = "disabled"
+        self.bought = False
         self.upgrade_opened_img = Image.open("Emojis/"+name+".png")
         self.upgrade_button_resized = ImageTk.PhotoImage(
             self.upgrade_opened_img.resize((20, 20)))
@@ -168,6 +176,12 @@ class Upgrade:
     def upgrade_button_pressed(self):
         """_summary_
         """
+        global full_cps, buildings
+        for building in buildings:
+            if building.name in self.upgrade:
+                building.upgrade_building()
+        change_money(-int(self.price))
+        self.bought = True
         self.disable_button()
 
     def disable_button(self):
@@ -212,7 +226,7 @@ def loop():
     """
     # update Chips
     global money, full_cps, cps_overflow, moneyLb, buildings
-    tmp = full_cps / 10 
+    tmp = full_cps / 10
     full_tmp = full_cps // 10
     cps_overflow += tmp - full_tmp # handle decimal overflow
     if cps_overflow >=10: # a full chip has been produced
@@ -224,9 +238,13 @@ def loop():
     for building in buildings:
         if (int(building.price) <= money):
             building.enable_button()
+        else:
+            building.disable_button()
     for upgrade in upgrades:
-        if (int(upgrade.price) <= money):
+        if (int(upgrade.price) <= money and not upgrade.bought):
             upgrade.enable_button()
+        else:
+            upgrade.disable_button()
     canvas.itemconfig(moneyLb, text=str(int(money))+" Chips") # update Label
     root.after(100, loop)
 
