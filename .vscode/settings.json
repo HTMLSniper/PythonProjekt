@@ -4,5 +4,6 @@
     ],
     "cSpell.words": [
         "padx"
-    ]
+    ],
+    "python.analysis.extraPaths": []
 }

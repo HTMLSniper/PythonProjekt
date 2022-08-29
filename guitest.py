@@ -3,6 +3,7 @@
     Returns:
     _type_: _description_
 """
+from ast import Lambda
 from tkinter import Button, Label, Frame, Tk, PhotoImage, Canvas
 import csv
 from PIL import Image, ImageTk
@@ -26,6 +27,10 @@ canvas.pack(fill="both", expand=True)
 # Set Background Image for Canvas
 canvas.create_image(0, 0, image=bg, anchor="nw")
 
+money = 0
+full_cps = 0
+cps_overflow = 0
+
 # methods
 
 
@@ -34,33 +39,37 @@ def settings():
     """
 
 
-def upgrade_button_pressed():
-    """_summary_
-    """
-
-
 def main_button_pressed():
     """_summary_
     """
+    change_money(1)
+    
+def change_money(diff):
+    global money, canvas, cpsLb
+    money += diff
+    canvas.itemconfig(moneyLb, text=str(money)+" Chips")
+    canvas.itemconfig(cpsLb, text=str(full_cps)+" Chips/s")
 
 
 # Add Label to Canvas
-money = canvas.create_text(200, 100, text="4000 Chips",
-                           font=("helvetica", 25), anchor="n")
-cps = canvas.create_text(
-    200, 140, text="50 Chips/s", font=("helvetica", 20), anchor="n")
+moneyLb = canvas.create_text(200, 100, text="0 Chips",
+                             font=("helvetica", 25), anchor="n")
+cpsLb = canvas.create_text(
+    200, 140, text="10 Chips/s", font=("helvetica", 20), anchor="n")
 chip_button = Button(root, image=chip_button_resized,
                      command=main_button_pressed, borderwidth=2, width=300, height=300)
 canvas.create_window(50, 250, anchor="nw", window=chip_button)
 
-canvas.itemconfig(cps, text="100 Chips/s")
+canvas.itemconfig(cpsLb, text="0 Chips/s")
 
 
 class Building:
     """_summary_
     """
+
     def __init__(self, root_window, name, price, building_cps):
         self.name = name
+        self.start_price = price
         self.price = price
         self.cps = building_cps
         self.count = 0
@@ -83,7 +92,8 @@ class Building:
         self.image_button.grid(row=0, column=0, rowspan=2, pady=0, sticky="w")
         self.price_lb.grid(row=0, column=1, padx=10, sticky="n")
         self.cps_lb.grid(row=1, column=1, padx=10, sticky="s")
-        self.count_lb.grid(row=0, column=2, rowspan=2, pady=5, padx=5, sticky="e")
+        self.count_lb.grid(row=0, column=2, rowspan=2,
+                           pady=5, padx=5, sticky="e")
         self.frame.grid_columnconfigure(1, weight=1)
 
     def get_frame(self):
@@ -97,6 +107,15 @@ class Building:
     def upgrade_button_pressed(self):
         """_summary_
         """
+        global full_cps
+        full_cps += int(self.cps)
+        change_money(-int(self.price))
+    
+        self.count += 1
+        self.price = int(self.count) * 5 + int(self.start_price)
+        
+        self.count_lb.config(text=str(self.count))
+        self.price_lb.config(text=str(self.price)+" Chips")
         self.disable_button()
 
     def disable_button(self):
@@ -110,11 +129,13 @@ class Building:
         """
         self.state = "normal"
         self.image_button.config(state=self.state)
+    
 
 
 class Upgrade:
     """_summary_
     """
+
     def __init__(self, root_window, name, price, condition, upgrade):
         self.name = name
         self.price = price
@@ -135,7 +156,7 @@ class Upgrade:
         self.image_button.grid(row=0, column=0, rowspan=2, pady=0, sticky="w")
         self.price_lb.grid(row=0, column=1, padx=10, pady=5)
         self.frame.grid_columnconfigure(1, weight=1)
-        
+
     def get_frame(self):
         """_summary_
 
@@ -143,7 +164,7 @@ class Upgrade:
             Frame: Frame of Building
         """
         return self.frame
-    
+
     def upgrade_button_pressed(self):
         """_summary_
         """
@@ -160,10 +181,6 @@ class Upgrade:
         """
         self.state = "normal"
         self.image_button.config(state=self.state)
-        
-        
-    # end def
-
 
 
 building_buttons = []
@@ -176,7 +193,7 @@ with open("buildings.csv", mode="r", encoding="utf8") as file:
             Building(root, str(lines[0]), lines[1], lines[2]))
         building_buttons.append(canvas.create_window(
             950, i*50+180, anchor="nw", window=buildings[i].get_frame()))
-        
+
 
 upgrade_buttons = []
 upgrades = []
@@ -190,4 +207,28 @@ with open("upgrades.csv", mode="r", encoding="utf8") as file:
             750, i*40+180, anchor="nw", window=upgrades[i].get_frame()))
 
 
+def loop():
+    """_summary_
+    """
+    # update Chips
+    global money, full_cps, cps_overflow, moneyLb, buildings
+    tmp = full_cps / 10 
+    full_tmp = full_cps // 10
+    cps_overflow += tmp - full_tmp # handle decimal overflow
+    if cps_overflow >=10: # a full chip has been produced
+        full_tmp += 1
+        cps_overflow -= 10
+    money += full_tmp # add cps to money
+    
+    # check buttons enable
+    for building in buildings:
+        if (int(building.price) <= money):
+            building.enable_button()
+    for upgrade in upgrades:
+        if (int(upgrade.price) <= money):
+            upgrade.enable_button()
+    canvas.itemconfig(moneyLb, text=str(int(money))+" Chips") # update Label
+    root.after(100, loop)
+
+loop()
 root.mainloop()
