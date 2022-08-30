@@ -43,12 +43,28 @@ def main_button_pressed():
     """_summary_
     """
     change_money(1)
-    
+
+def short_number(num):
+    """_summary_
+
+    Args:
+        num (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    if 0 <= num < 1000000:
+        return str(num)
+    if 1000000 <= num < 1000000000:
+        return str(round(num/1000000,3)) + " Millionen"
+    if 1000000000 <= num <= 1000000000000:
+        return str(round(num/1000000000,3)) + " Milliarden"
+
 def change_money(diff):
     global money, canvas, cpsLb
     money += diff
-    canvas.itemconfig(moneyLb, text=str(money)+" Chips")
-    canvas.itemconfig(cpsLb, text=str(full_cps)+" Chips/s")
+    canvas.itemconfig(moneyLb, text=short_number(money)+" Chips")
+    canvas.itemconfig(cpsLb, text=short_number(full_cps)+" Chips/s")
 
 
 # Add Label to Canvas
@@ -223,6 +239,7 @@ with open("upgrades.csv", mode="r", encoding="utf8") as file:
         upgrade_buttons.append(canvas.create_window(
             750, i*40+180, anchor="nw", window=upgrades[i].get_frame()))
 
+# TODO BUG bei 10 Händen auf einmal 100 cps??
 
 def loop():
     """_summary_
@@ -248,7 +265,7 @@ def loop():
             upgrade.enable_button()
         else:
             upgrade.disable_button()
-    canvas.itemconfig(moneyLb, text=str(int(money))+" Chips") # update Label
+    canvas.itemconfig(moneyLb, text=short_number(int(money))+" Chips") # update Label
     root.after(10, loop)
 
 loop()
