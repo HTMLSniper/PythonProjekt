@@ -108,15 +108,17 @@ class Building:
         """_summary_
         """
         global full_cps
+        self.disable_button()
         full_cps += int(self.cps)
         change_money(-int(self.price))
     
         self.count += 1
-        self.price = int(self.count) * 5 + int(self.start_price)
+        # calculate new price for next building
+        self.price =  int(int(self.start_price) * pow(1.15,int(self.count)))
         
         self.count_lb.config(text=str(self.count))
         self.price_lb.config(text=str(self.price)+" Chips")
-        self.disable_button()
+        
 
     def disable_button(self):
         """_summary_
@@ -135,7 +137,7 @@ class Building:
         """
         global full_cps
         full_cps += int(self.cps)*int(self.count)
-        self.cps *= 2
+        self.cps = int(self.cps) * 2
         self.cps_lb.config(text=str(self.cps)+" Chips/s")
 
 
@@ -177,12 +179,13 @@ class Upgrade:
         """_summary_
         """
         global full_cps, buildings
+        self.bought = True
+        self.disable_button()
         for building in buildings:
             if building.name in self.upgrade:
                 building.upgrade_building()
         change_money(-int(self.price))
-        self.bought = True
-        self.disable_button()
+        
 
     def disable_button(self):
         """_summary_
@@ -246,7 +249,7 @@ def loop():
         else:
             upgrade.disable_button()
     canvas.itemconfig(moneyLb, text=str(int(money))+" Chips") # update Label
-    root.after(100, loop)
+    root.after(10, loop)
 
 loop()
 root.mainloop()
