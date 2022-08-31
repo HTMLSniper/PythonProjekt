@@ -44,6 +44,10 @@ def main_button_pressed():
     """
     change_money(1)
 
+def restart_button_pressed():
+    """_summary_
+    """
+
 def short_number(num):
     """_summary_
 
@@ -74,7 +78,9 @@ cpsLb = canvas.create_text(
     200, 140, text="10 Chips/s", font=("helvetica", 20), anchor="n")
 chip_button = Button(root, image=chip_button_resized,
                      command=main_button_pressed, borderwidth=2, width=300, height=300)
+restart_button = Button(root, text="Neustart", command=restart_button_pressed, width=20)
 canvas.create_window(50, 250, anchor="nw", window=chip_button)
+canvas.create_window(600, 100, anchor="n", window=restart_button)
 
 canvas.itemconfig(cpsLb, text="0 Chips/s")
 
@@ -239,7 +245,6 @@ with open("upgrades.csv", mode="r", encoding="utf8") as file:
         upgrade_buttons.append(canvas.create_window(
             750, i*40+180, anchor="nw", window=upgrades[i].get_frame()))
 
-# TODO BUG bei 10 Händen auf einmal 100 cps??
 
 def loop():
     """_summary_
@@ -249,9 +254,9 @@ def loop():
     tmp = full_cps / 10
     full_tmp = full_cps // 10
     cps_overflow += tmp - full_tmp # handle decimal overflow
-    if cps_overflow >=10: # a full chip has been produced
+    if cps_overflow >=1: # a full chip has been produced
         full_tmp += 1
-        cps_overflow -= 10
+        cps_overflow -= 1
     money += full_tmp # add cps to money
     
     # check buttons enable
@@ -266,7 +271,7 @@ def loop():
         else:
             upgrade.disable_button()
     canvas.itemconfig(moneyLb, text=short_number(int(money))+" Chips") # update Label
-    root.after(10, loop)
+    root.after(100, loop)
 
 loop()
 root.mainloop()
