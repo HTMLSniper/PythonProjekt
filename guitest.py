@@ -27,9 +27,8 @@ canvas.pack(fill="both", expand=True)
 # Set Background Image for Canvas
 canvas.create_image(0, 0, image=bg, anchor="nw")
 
-money = 0
-full_cps = 0
-cps_overflow = 0
+money,full_cps,cps_overflow = 0,0,0
+building_buttons, buildings, upgrade_buttons, upgrades = [],[],[],[]
 
 # methods
 
@@ -47,6 +46,10 @@ def main_button_pressed():
 def restart_button_pressed():
     """_summary_
     """
+    global money,full_cps,cps_overflow
+    money,full_cps,cps_overflow = 0,0,0
+    canvas.itemconfig(cpsLb, text=short_number(full_cps)+" Chips/s")
+    read_from_files()
 
 def short_number(num):
     """_summary_
@@ -222,28 +225,33 @@ class Upgrade:
         self.image_button.config(state=self.state)
 
 
-building_buttons = []
-buildings = []
 
-with open("buildings.csv", mode="r", encoding="utf8") as file:
-    buildings_csv = csv.reader(file, delimiter=";")
-    for i, lines in enumerate(buildings_csv, 0):
-        buildings.append(
-            Building(root, str(lines[0]), lines[1], lines[2]))
-        building_buttons.append(canvas.create_window(
-            950, i*50+180, anchor="nw", window=buildings[i].get_frame()))
+def read_from_files():
+    """_summary_
+    """
+    global building_buttons, buildings, upgrade_buttons, upgrades
+    building_buttons = []
+    buildings = []
+
+    with open("buildings.csv", mode="r", encoding="utf8") as file:
+        buildings_csv = csv.reader(file, delimiter=";")
+        for i, lines in enumerate(buildings_csv, 0):
+            buildings.append(
+                Building(root, str(lines[0]), lines[1], lines[2]))
+            building_buttons.append(canvas.create_window(
+                950, i*50+180, anchor="nw", window=buildings[i].get_frame()))
 
 
-upgrade_buttons = []
-upgrades = []
+    upgrade_buttons = []
+    upgrades = []
 
-with open("upgrades.csv", mode="r", encoding="utf8") as file:
-    upgrades_csv = csv.reader(file, delimiter=";")
-    for i, lines in enumerate(upgrades_csv, 0):
-        upgrades.append(
-            Upgrade(root, str(lines[0]), lines[1], lines[2], lines[3]))
-        upgrade_buttons.append(canvas.create_window(
-            750, i*40+180, anchor="nw", window=upgrades[i].get_frame()))
+    with open("upgrades.csv", mode="r", encoding="utf8") as file:
+        upgrades_csv = csv.reader(file, delimiter=";")
+        for i, lines in enumerate(upgrades_csv, 0):
+            upgrades.append(
+                Upgrade(root, str(lines[0]), lines[1], lines[2], lines[3]))
+            upgrade_buttons.append(canvas.create_window(
+                750, i*40+180, anchor="nw", window=upgrades[i].get_frame()))
 
 
 def loop():
@@ -273,5 +281,6 @@ def loop():
     canvas.itemconfig(moneyLb, text=short_number(int(money))+" Chips") # update Label
     root.after(100, loop)
 
+read_from_files()
 loop()
 root.mainloop()
