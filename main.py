@@ -360,109 +360,58 @@ class Building(ButtonFrame):
         self.price_lb.config(text=str(self.price)+" Chips")
         self.cps_lb.config(text=str(self.cps)+" Chips/s")
 
-# TODO Aufräumen + Kommentare
+# TODO Aufräumen
 
-class Upgrade:
+class Upgrade(ButtonFrame):
     """ Upgrades frame and button """
     def __init__(self, root_window, name, price, condition, upgrade):
-        self.name = name
-        self.price = price
+        super().__init__(root_window, name, price)
         self.condition = condition
         self.upgrade = upgrade
-        self.state = "disabled"
         self.bought = False
-        self.shown = False
-        self.upgrade_opened_img = Image.open("Emojis/"+name+".png")
-        self.upgrade_button_resized = ImageTk.PhotoImage(
-            self.upgrade_opened_img.resize((20, 20)))
-
-        self.frame = Frame(root_window, borderwidth=0, width=180, height=33)
-        self.frame.grid_propagate(0)
-        self.image_button = Button(self.frame, image=self.upgrade_button_resized,
-                                   command=self.upgrade_button_pressed, borderwidth=0,
-                                   width=33, height=33, state=self.state)
-        self.price_lb = Label(self.frame, text=str(
-            self.price) + " Chips", font=("helvetica", 10))
         self.show_button()
-        self.frame.grid_columnconfigure(1, weight=1)
 
     def show_button(self):
-        """_summary_
-        """
+        """ check if to show button and show if """
         if global_dict["money"] >= int(self.price)*0.5:
             self.show_all()
             self.shown = True
 
     def show_all(self):
-        """_summary_
-        """
-        self.image_button.grid(row=0, column=0, rowspan=2, pady=0, sticky="w")
+        """ place the button and the labels on the grid """
+        super().show_all()
         self.price_lb.grid(row=0, column=1, padx=10, pady=5)
 
-    def get_frame(self):
-        """_summary_
-
-        Returns:
-            Frame: Frame of Building
-        """
-        return self.frame
-
     def upgrade_button_pressed(self):
-        """_summary_
-        """
-        self.bought = True
-        self.upgrade_bought(self.price)
+        """ the main button was pressed -> buy upgrade """
+        super().upgrade_button_pressed()
+        self.upgrade_bought(0)
 
     def upgrade_bought(self, price):
-        """_summary_
-        """
+        """ upgrade the buildings and set as bought"""
         self.disable_button()
         for building in buildings:
             if building.name in self.upgrade:
                 building.upgrade_building()
         change_money(-int(price))
+        self.bought = True
         self.price_lb.config(text="--Gekauft--")
 
-    def disable_button(self):
-        """_summary_
-        """
-        self.state = "disabled"
-        self.image_button.config(state=self.state)
-
-    def enable_button(self):
-        """_summary_
-        """
-        self.state = "normal"
-        self.image_button.config(state=self.state)
-
     def save(self):
-        """_summary_
-        """
-        upgrades_json = {}
-        upgrades_json["name"] = self.name
-        upgrades_json["price"] = self.price
+        """ save everything in a dict """
+        upgrades_json = super().save()
         upgrades_json["condition"] = self.condition
         upgrades_json["upgrade"] = self.upgrade
-        upgrades_json["state"] = self.state
         upgrades_json["bought"] = self.bought
-        upgrades_json["shown"] = self.shown
         return upgrades_json
 
-    def load(self, upgrades_json):
-        """_summary_
-        """
-        self.name = upgrades_json["name"]
-        self.price = int(upgrades_json["price"])
-        self.condition = upgrades_json["condition"]
-        self.upgrade = upgrades_json["upgrade"]
-        self.bought = upgrades_json["bought"]
-        self.state = upgrades_json["state"]
-        self.shown = upgrades_json["shown"]
-        if self.shown:
-            self.show_all()
+    def load(self, attr_json):
+        """ load everything from a dict and update labels """
+        self.condition = attr_json["condition"]
+        self.upgrade = attr_json["upgrade"]
+        self.bought = attr_json["bought"]
         if self.bought:
             self.upgrade_bought(0)
-        self.image_button.config(state=self.state)
 
 
 # start the program and read button data
