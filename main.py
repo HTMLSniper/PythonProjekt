@@ -1,11 +1,13 @@
 """ Microclicker by Colin Vavra """
 import json
-from tkinter import Button, Label, Frame, Tk, PhotoImage, Canvas, messagebox
+from tkinter import DISABLED, NORMAL, Button, Label, Frame, Tk, PhotoImage, Canvas, messagebox
 import csv
 from PIL import Image, ImageTk
 
 # globals
 global_dict = {"money": 0, "full_cps": 0, "cps_overflow": 0}
+achievements_dict = {"Habe 100 Chips:": False, "Habe CPS von 50:": False,
+                     "Kaufe die Erde:": False, "Kaufe das teuerste Upgrade:": False}
 building_buttons, buildings, upgrade_buttons, upgrades = [], [], [], []
 save_json = {}
 
@@ -14,7 +16,7 @@ root = Tk()
 root.title("MicroClicker")
 root.iconbitmap("Emojis/Microchip.ico")
 root.geometry("1200x710")
-root.resizable(0, 0)  # fix window size
+root.resizable(None, None)  # fix window size
 
 # images
 bg = PhotoImage(file="Background1.png")
@@ -34,7 +36,7 @@ moneyLb = canvas.create_text(200, 100, text="0 Chips",
 cpsLb = canvas.create_text(200, 140, text="0 Chips/s",
                            font=("helvetica", 20), anchor="n")
 
-
+#TODO cps anzeige ist ein kauf hinterher erst wenn auf mainbutton geklickt wird
 # methods
 def read_from_files():
     """ read button data from csv files """
@@ -72,7 +74,19 @@ def loop():
         global_dict["cps_overflow"] -= 1
     global_dict["money"] += full_tmp  # add cps to money
 
-    # check buttons enable
+    check_buttons_enable()
+    check_achievements()
+     
+    # update main label
+    canvas.itemconfig(moneyLb, text=short_number(
+        int(global_dict["money"]))+" Chips")
+
+    # recursive call
+    root.after(100, loop)
+
+
+def check_buttons_enable():
+    """ check buttons if enable and show """
     for building in buildings:
         if building.shown is False:
             building.show_button()
@@ -90,12 +104,16 @@ def loop():
         else:
             upgrade.disable_button()
 
-    # update main label
-    canvas.itemconfig(moneyLb, text=short_number(
-        int(global_dict["money"]))+" Chips")
 
-    # recursive call
-    root.after(100, loop)
+def check_achievements():
+    if global_dict["money"] >= 100:
+        achievements_dict["Habe 100 Chips:"] = True
+    if global_dict["full_cps"] >= 50:
+        achievements_dict["Habe CPS von 50:"] = True
+    if buildings[len(buildings) -1].count >= 1:
+        achievements_dict["Kaufe die Erde:"] = True
+    if upgrades[len(upgrades) -1].bought:
+        achievements_dict["Kaufe das teuerste Upgrade:"] = True
 
 
 def main_button_pressed():
@@ -108,13 +126,22 @@ def restart_button_pressed():
     global_dict["money"] = 0
     global_dict["full_cps"] = 0
     global_dict["cps_overflow"] = 0
+    # reset avievements
+    for item in achievements_dict.items():
+        achievements_dict[item[0]] = False
     canvas.itemconfig(cpsLb, text=short_number(global_dict["full_cps"]) + " Chips/s")
     read_from_files()
 
 
 def achievements_button_pressed():
     """ show messagebox about achieved achievements """
-    messagebox.showinfo(title="Achievements", message="None, \n options")
+    tmp_string = ""
+    for item in achievements_dict.items():
+        if item[1]:
+            tmp_string += item[0] + " --Bekommen--" +"\n"
+        else:
+            tmp_string += item[0] + " ----" +"\n"
+    messagebox.showinfo(title="Achievements", message=tmp_string)
 
 
 def save_button_pressed():
@@ -132,6 +159,8 @@ def load_button_pressed():
     """ load everything from a json file """
     file_load = open("mydata.json", encoding="utf-8")
     load_json = json.load(file_load)
+
+    # change globals
     global_dict["money"] = load_json["money"]
     global_dict["full_cps"] = load_json["full_cps"]
     global_dict["cps_overflow"] = load_json["cps_overflow"]
@@ -159,23 +188,7 @@ def load_button_pressed():
         upgrade_buttons.append(canvas.create_window(
             750, i*40+180, anchor="nw", window=upgrades[i].get_frame()))
 
-    # first check if buttons are visible
-    for building in buildings:
-        if building.shown is False:
-            building.show_button()
-            break
-        if int(building.price) <= global_dict["money"]:
-            building.enable_button()
-        else:
-            building.disable_button()
-    for upgrade in upgrades:
-        if upgrade.shown is False:
-            upgrade.show_button()
-            break
-        if int(upgrade.price) <= global_dict["money"] and not upgrade.bought:
-            upgrade.enable_button()
-        else:
-            upgrade.disable_button()
+    check_buttons_enable()
 
     file_load.close()
 
@@ -229,18 +242,20 @@ def create_buttons():
     canvas.create_window(600, 250, anchor="n", window=load_button)
     canvas.create_window(600, 600, anchor="n", window=exit_button)
 
+
+# classes
 class ButtonFrame:
     """ Parent class for the button classes """
     def __init__(self, root_window, name, price):
         self.name = name
         self.price = price
-        self.state = "disabled"
+        self.state = DISABLED
         self.shown = False
         self.button_img = Image.open("Emojis/" + self.name + ".png")
         self.upgrade_button_resized = ImageTk.PhotoImage(
             self.button_img.resize((20, 20)))
         self.frame = Frame(root_window, borderwidth=0, width=180, height=33)
-        self.frame.grid_propagate(0)
+        self.frame.grid_propagate(False)
         self.price_lb = Label(self.frame, text=str(
             self.price) + " Chips", font=("helvetica", 10))
         self.image_button = Button(self.frame, image=self.upgrade_button_resized,
@@ -258,12 +273,12 @@ class ButtonFrame:
 
     def disable_button(self):
         """ disable the button """
-        self.state = "disabled"
+        self.state = DISABLED
         self.image_button.config(state=self.state)
 
     def enable_button(self):
         """ enable the button """
-        self.state = "normal"
+        self.state = NORMAL
         self.image_button.config(state=self.state)
 
     def upgrade_button_pressed(self):
@@ -325,8 +340,8 @@ class Building(ButtonFrame):
 
     def upgrade_button_pressed(self):
         """ the main button was pressed -> buy building """
-        super().upgrade_button_pressed()
         global_dict["full_cps"] += int(self.cps)
+        super().upgrade_button_pressed()
 
         self.count += 1
         # calculate new price for next building
@@ -360,7 +375,6 @@ class Building(ButtonFrame):
         self.price_lb.config(text=str(self.price)+" Chips")
         self.cps_lb.config(text=str(self.cps)+" Chips/s")
 
-# TODO Aufräumen
 
 class Upgrade(ButtonFrame):
     """ Upgrades frame and button """
@@ -415,6 +429,7 @@ class Upgrade(ButtonFrame):
 
 
 # start the program and read button data
+create_buttons()
 read_from_files()
 loop()
 root.mainloop()
