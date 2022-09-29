@@ -236,7 +236,7 @@ class ButtonFrame:
         self.price = price
         self.state = "disabled"
         self.shown = False
-        self.button_img = Image.open("Emojis/" + name + ".png")
+        self.button_img = Image.open("Emojis/" + self.name + ".png")
         self.upgrade_button_resized = ImageTk.PhotoImage(
             self.button_img.resize((20, 20)))
         self.frame = Frame(root_window, borderwidth=0, width=180, height=33)
@@ -246,13 +246,14 @@ class ButtonFrame:
         self.image_button = Button(self.frame, image=self.upgrade_button_resized,
                                    command=self.upgrade_button_pressed, borderwidth=0,
                                    width=33, height=33, state=self.state)
+        self.frame.grid_columnconfigure(1, weight=1)
 
     def get_frame(self):
         """ returns the frame """
         return self.frame
 
     def show_all(self):
-        """ place the button in the grid """
+        """ place the button on the grid """
         self.image_button.grid(row=0, column=0, rowspan=2, pady=0, sticky="w")
 
     def disable_button(self):
@@ -292,33 +293,23 @@ class ButtonFrame:
         return self
 
 
-class Building:
+class Building(ButtonFrame):
     """ Buildings frame, button and counter """
     def __init__(self, root_window, name, price, building_cps):
-        self.name = name
+        super().__init__(self, root_window, (name, price)) # pylint: disable=E1121
         self.start_price = price
-        self.price = price
         self.cps = building_cps
         self.count = 0
-        self.state = "disabled"
-        self.shown = False
-        self.building_opened_img = Image.open("Emojis/"+name+".png")
         self.building_button_resized = ImageTk.PhotoImage(
-            self.building_opened_img.resize((30, 30)))
-        self.frame = Frame(root_window, borderwidth=0, width=180, height=48)
-        self.frame.grid_propagate(0)
+            self.button_img.resize((30, 30)))
+        self.frame.config(height=48)
         self.frame.pack(fill="x")
-        self.image_button = Button(self.frame, image=self.building_button_resized,
-                                   command=self.upgrade_button_pressed, borderwidth=0,
-                                   width=40, height=40, state=self.state)
-        self.price_lb = Label(self.frame, text=str(
-            self.price) + " Chips", font=("helvetica", 10))
+        self.image_button.config(width=40, height=40)
         self.cps_lb = Label(self.frame, text=str(self.cps) +
                             " Chips/s", font=("helvetica", 10))
         self.count_lb = Label(self.frame, text=str(
             self.count), font=("helvetica", 20), fg="gray")
         self.show_button()
-        self.frame.grid_columnconfigure(1, weight=1)
 
     def show_button(self):
         """_summary_
@@ -328,9 +319,8 @@ class Building:
             self.shown = True
 
     def show_all(self):
-        """_summary_
-        """
-        self.image_button.grid(row=0, column=0, rowspan=2, pady=0, sticky="w")
+        """ place the button and the labels on the grid """
+        super().show_all()
         self.price_lb.grid(row=0, column=1, padx=10, sticky="n")
         self.cps_lb.grid(row=1, column=1, padx=10, sticky="s")
         self.count_lb.grid(row=0, column=2, rowspan=2,
