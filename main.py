@@ -280,23 +280,21 @@ class ButtonFrame:
         upgrades_json["shown"] = self.shown
         return upgrades_json
 
-    def load(self, upgrades_json):
-        """_summary_
-        """
-        self.name = upgrades_json["name"]
-        self.price = upgrades_json["price"]
-        self.state = upgrades_json["state"]
-        self.shown = upgrades_json["shown"]
+    def load(self, attr_json):
+        """ load everything from a dict and show if """
+        self.name = attr_json["name"]
+        self.price = attr_json["price"]
+        self.state = attr_json["state"]
+        self.shown = attr_json["shown"]
         if self.shown:
             self.show_all()
         self.image_button.config(state=self.state)
-        return self
 
 
 class Building(ButtonFrame):
     """ Buildings frame, button and counter """
     def __init__(self, root_window, name, price, building_cps):
-        super().__init__(self, root_window, (name, price)) # pylint: disable=E1121
+        super().__init__(root_window, name, price)
         self.start_price = price
         self.cps = building_cps
         self.count = 0
@@ -312,8 +310,7 @@ class Building(ButtonFrame):
         self.show_button()
 
     def show_button(self):
-        """_summary_
-        """
+        """ check if to show button and show if """
         if global_dict["money"] >= int(self.start_price)*0.5:
             self.show_all()
             self.shown = True
@@ -326,20 +323,10 @@ class Building(ButtonFrame):
         self.count_lb.grid(row=0, column=2, rowspan=2,
                            pady=5, padx=5, sticky="e")
 
-    def get_frame(self):
-        """_summary_
-
-        Returns:
-            Frame: Frame of Building
-        """
-        return self.frame
-
     def upgrade_button_pressed(self):
-        """_summary_
-        """
-        self.disable_button()
+        """ the main button was pressed -> buy building """
+        super().upgrade_button_pressed()
         global_dict["full_cps"] += int(self.cps)
-        change_money(-int(self.price))
 
         self.count += 1
         # calculate new price for next building
@@ -348,57 +335,32 @@ class Building(ButtonFrame):
         self.count_lb.config(text=str(self.count))
         self.price_lb.config(text=str(self.price)+" Chips")
 
-    def disable_button(self):
-        """_summary_
-        """
-        self.state = "disabled"
-        self.image_button.config(state=self.state)
-
-    def enable_button(self):
-        """_summary_
-        """
-        self.state = "normal"
-        self.image_button.config(state=self.state)
-
     def upgrade_building(self):
-        """_summary_
-        """
+        """ upgrade for this building was bought """
         global_dict["full_cps"] += int(self.cps)*int(self.count)
+        # double the cps
         self.cps = int(self.cps) * 2
         self.cps_lb.config(text=str(self.cps)+" Chips/s")
 
     def save(self):
-        """_summary_
-        """
-        buildings_json = {}
-        buildings_json["name"] = self.name
+        """ save everything in a dict """
+        buildings_json = super().save()
         buildings_json["start_price"] = self.start_price
-        buildings_json["price"] = self.price
         buildings_json["cps"] = self.cps
         buildings_json["count"] = self.count
-        buildings_json["state"] = self.state
-        buildings_json["shown"] = self.shown
         return buildings_json
 
-    def load(self, buildings_json):
-        """_summary_
-        """
-        self.name = buildings_json["name"]
-        self.start_price = buildings_json["start_price"]
-        self.price = buildings_json["price"]
-        self.cps = buildings_json["cps"]
-        self.count = buildings_json["count"]
-        self.state = buildings_json["state"]
-        self.shown = buildings_json["shown"]
-        if self.shown:
-            self.show_all()
+    def load(self, attr_json):
+        """ load everything from a dict and update labels """
+        super().load(attr_json)
+        self.start_price = attr_json["start_price"]
+        self.cps = attr_json["cps"]
+        self.count = attr_json["count"]
         self.count_lb.config(text=str(self.count))
         self.price_lb.config(text=str(self.price)+" Chips")
         self.cps_lb.config(text=str(self.cps)+" Chips/s")
-        return self
 
-# TODO Aufräumen + Kommentare + global drüberschauen
-
+# TODO Aufräumen + Kommentare
 
 class Upgrade:
     """ Upgrades frame and button """
@@ -501,7 +463,6 @@ class Upgrade:
         if self.bought:
             self.upgrade_bought(0)
         self.image_button.config(state=self.state)
-        return self
 
 
 # start the program and read button data
