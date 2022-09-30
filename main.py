@@ -19,7 +19,7 @@ root.geometry("1200x710")
 root.resizable(None, None)  # fix window size
 
 # images
-bg = PhotoImage(file="Background1.png")
+bg = PhotoImage(file="Background.png")
 button_img = Image.open("Emojis/Microchip.png")
 chip_button_resized = ImageTk.PhotoImage(button_img.resize((300, 300)))
 
@@ -36,7 +36,13 @@ moneyLb = canvas.create_text(200, 100, text="0 Chips",
 cpsLb = canvas.create_text(200, 140, text="0 Chips/s",
                            font=("helvetica", 20), anchor="n")
 
-#TODO cps anzeige ist ein kauf hinterher erst wenn auf mainbutton geklickt wird
+# extra labels
+buildingLb = canvas.create_text(950, 145, text="Gebäude:",
+                           font=("helvetica", 18), anchor="nw")
+upgradeLb = canvas.create_text(750, 145, text="Upgrades:",
+                           font=("helvetica", 18), anchor="nw")
+
+#TODO maybe: neustart boni, hover popup
 # methods
 def read_from_files():
     """ read button data from csv files """
@@ -167,6 +173,10 @@ def load_button_pressed():
     buildings_json = load_json["buildings"]
     upgrades_json = load_json["upgrades"]
 
+    # clear achievements
+    for item in achievements_dict.items():
+        achievements_dict[item[0]] = False
+        
     # load buildings
     buildings.clear()
     for i, build_en in enumerate(buildings_json, 0):
