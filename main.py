@@ -1,8 +1,9 @@
 """ Microclicker by Colin Vavra """
 import json
-from tkinter import DISABLED, NORMAL, Button, Label, Frame, Tk, PhotoImage, Canvas, messagebox
 import csv
+from tkinter import DISABLED, NORMAL, Button, Label, Frame, Tk, PhotoImage, Canvas, messagebox
 from PIL import Image, ImageTk
+from tktooltip import ToolTip
 
 # globals
 global_dict = {"money": 0, "full_cps": 0, "cps_overflow": 0}
@@ -42,7 +43,7 @@ buildingLb = canvas.create_text(950, 145, text="Gebäude:",
 upgradeLb = canvas.create_text(750, 145, text="Upgrades:",
                            font=("helvetica", 18), anchor="nw")
 
-#TODO maybe: neustart boni, hover popup
+
 # methods
 def read_from_files():
     """ read button data from csv files """
@@ -53,7 +54,7 @@ def read_from_files():
         buildings_csv = csv.reader(file, delimiter=";")
         for i, lines in enumerate(buildings_csv, 0):
             buildings.append(
-                Building(root, str(lines[0]), lines[1], lines[2]))
+                Building(root, str(lines[0]), lines[1], lines[2], lines[3]))
             building_buttons.append(canvas.create_window(
                 950, i*50+180, anchor="nw", window=buildings[i].get_frame()))
 
@@ -82,7 +83,7 @@ def loop():
 
     check_buttons_enable()
     check_achievements()
-     
+
     # update main label
     canvas.itemconfig(moneyLb, text=short_number(
         int(global_dict["money"]))+" Chips")
@@ -112,6 +113,7 @@ def check_buttons_enable():
 
 
 def check_achievements():
+    """ checks if achievements are fulfilled """
     if global_dict["money"] >= 100:
         achievements_dict["Habe 100 Chips:"] = True
     if global_dict["full_cps"] >= 50:
@@ -176,12 +178,12 @@ def load_button_pressed():
     # clear achievements
     for item in achievements_dict.items():
         achievements_dict[item[0]] = False
-        
+
     # load buildings
     buildings.clear()
     for i, build_en in enumerate(buildings_json, 0):
         building = Building(root, build_en["name"], int(
-            build_en["price"]), int(build_en["cps"]))
+            build_en["price"]), int(build_en["cps"]), build_en["tooltip"])
         building.load(build_en)
         buildings.append(building)
         building_buttons.append(canvas.create_window(
@@ -192,7 +194,7 @@ def load_button_pressed():
     upgrades.clear()
     for i, upgrade_en in enumerate(upgrades_json, 0):
         upgrade = Upgrade(root, str(upgrade_en["name"]), upgrade_en["price"],
-                          upgrade_en["condition"], upgrade_en["upgrade"])
+                          upgrade_en["upgrade"], upgrade_en["tooltip"])
         upgrade.load(upgrade_en)
         upgrades.append(upgrade)
         upgrade_buttons.append(canvas.create_window(
@@ -256,9 +258,10 @@ def create_buttons():
 # classes
 class ButtonFrame:
     """ Parent class for the button classes """
-    def __init__(self, root_window, name, price):
+    def __init__(self, root_window, name, price, tooltip):
         self.name = name
         self.price = price
+        self.tooltip = tooltip
         self.state = DISABLED
         self.shown = False
         self.button_img = Image.open("Emojis/" + self.name + ".png")
@@ -280,6 +283,7 @@ class ButtonFrame:
     def show_all(self):
         """ place the button on the grid """
         self.image_button.grid(row=0, column=0, rowspan=2, pady=0, sticky="w")
+        ToolTip(self.frame, msg=self.tooltip, follow=True, delay=1.0)
 
     def disable_button(self):
         """ disable the button """
@@ -301,6 +305,7 @@ class ButtonFrame:
         upgrades_json = {}
         upgrades_json["name"] = self.name
         upgrades_json["price"] = self.price
+        upgrades_json["tooltip"] = self.tooltip
         upgrades_json["state"] = self.state
         upgrades_json["shown"] = self.shown
         return upgrades_json
@@ -311,6 +316,7 @@ class ButtonFrame:
         self.price = attr_json["price"]
         self.state = attr_json["state"]
         self.shown = attr_json["shown"]
+        self.tooltip = attr_json["tooltip"]
         if self.shown:
             self.show_all()
         self.image_button.config(state=self.state)
@@ -318,8 +324,8 @@ class ButtonFrame:
 
 class Building(ButtonFrame):
     """ Buildings frame, button and counter """
-    def __init__(self, root_window, name, price, building_cps):
-        super().__init__(root_window, name, price)
+    def __init__(self, root_window, name, price, building_cps, tooltip):
+        super().__init__(root_window, name, price, tooltip)
         self.start_price = price
         self.cps = building_cps
         self.count = 0
@@ -388,9 +394,8 @@ class Building(ButtonFrame):
 
 class Upgrade(ButtonFrame):
     """ Upgrades frame and button """
-    def __init__(self, root_window, name, price, condition, upgrade):
-        super().__init__(root_window, name, price)
-        self.condition = condition
+    def __init__(self, root_window, name, price, upgrade, tooltip):
+        super().__init__(root_window, name, price, tooltip)
         self.upgrade = upgrade
         self.bought = False
         self.show_button()
@@ -424,14 +429,12 @@ class Upgrade(ButtonFrame):
     def save(self):
         """ save everything in a dict """
         upgrades_json = super().save()
-        upgrades_json["condition"] = self.condition
         upgrades_json["upgrade"] = self.upgrade
         upgrades_json["bought"] = self.bought
         return upgrades_json
 
     def load(self, attr_json):
         """ load everything from a dict and update labels """
-        self.condition = attr_json["condition"]
         self.upgrade = attr_json["upgrade"]
         self.bought = attr_json["bought"]
         if self.bought:

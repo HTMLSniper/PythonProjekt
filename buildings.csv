@@ -1,10 +1,10 @@
-Hand;10;1
-Mechaniker;50;3
-Zelt;100;5
-Haus;200;10
-Fabrik;1000;25
-Stadion;2000;50
-Stadt;8000;100
-Insel;20000;200
-Gebirge;80000;500
-Planet;200000;1000
+Hand;10;1;Hand: Wird durch Doppelhand und Fusshand geupgradet
+Mechaniker;50;3;Mechaniker: Wird durch Kaese, Handschuhe und Lupe geupgradet
+Zelt;100;5;Zelt: Wird durch Lupe und Mikroskop geupgradet
+Haus;200;10;Haus: Wird durch Magnet geupgradet
+Fabrik;1000;25;Fabrik: Wird durch Atomkraft geupgradet
+Stadion;2000;50;Stadion: Wird durch Atomkraft geupgradet
+Stadt;8000;100;Stadt: Wird durch Polizei geupgradet
+Insel;20000;200;Insel: Wird durch Polizei und Auto geupgradet
+Gebirge;80000;500;Gebirge: Wird durch Auto geupgradet
+Planet;200000;1000;Planet: Wird durch Flugzeug geupgradet

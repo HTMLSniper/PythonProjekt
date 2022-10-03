@@ -1,11 +1,11 @@
-Doppelhand;100;10;Hand
-Fusshand;500;25;Hand
-Kaese;1000;10;Mechaniker
-Handschuhe;5000;25;Mechaniker
-Lupe;5000;25,1;Mechaniker,Zelt
-Mikroskop;5000;10;Zelt
-Magnet;10000;10;Haus
-Atomkraft;50000;10,1;Fabrik,Stadion
-Polizei;100000;10,1;Stadt,Insel
-Auto;500000;10,1;Insel,Gebirge
-Flugzeug;2000000;10;Planet
+Doppelhand;100;Hand;Doppelhand: Verdoppelt die CPS von Haenden
+Fusshand;500;Hand;Fusshand: Verdoppelt die CPS von Haenden
+Kaese;1000;Mechaniker;Kaese: Verdoppelt die CPS von Mechanikern
+Handschuhe;5000;Mechaniker;Handschuhe: Verdoppelt die CPS von Mechanikern
+Lupe;5000;Mechaniker,Zelt;Lupe: Verdoppelt die CPS von Mechanikern und Zelten
+Mikroskop;5000;Zelt;Mikroskop: Verdoppelt die CPS von Zelten
+Magnet;10000;Haus;Magnet: Verdoppelt die CPS von Haeusern
+Atomkraft;50000;Fabrik,Stadion;Atomkraft: Verdoppelt die CPS von Fabriken und Stadions
+Polizei;100000;Stadt,Insel;Polizei: Verdoppelt die CPS von Staedten und Inseln
+Auto;500000;Insel,Gebirge;Auto: Verdoppelt die CPS von Inseln und Gebirgen
+Flugzeug;2000000;Planet;Flugzeug: Verdoppelt die CPS von Planeten
